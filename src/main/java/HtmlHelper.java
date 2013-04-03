@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: ragvena
@@ -19,6 +22,94 @@ public class HtmlHelper {
     private static final String PREFFIX = "http://list.mail.ru";
 
     public static void main(String[] args) throws IOException {
+        List<String> test = new ArrayList<String>();
+        test.add("http://list.mail.ru/18134/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/16185/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/12403/1/0_1_0_1.html");
+        test.add("http://list.mail.ru/33728/1/0_1_0_1.html");
+        ExecutorService executorService = new BlockingThreadPoolExecutor(10,
+                10, 1000L, TimeUnit.MILLISECONDS, 1000L, TimeUnit.MILLISECONDS, new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return true;
+            }
+        });
+        for (final String url : test) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(new Date().toString()+"\t"+url+"\t"+getUrlsFromPages(url).size()+"");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        }
+
+    }
+
+
+    private static  Set<String> getUrlsFromPages(String startUrl) throws IOException {
+        Set<String> urls = new HashSet<String>();
+        processUrlsSinglePageAndMoveForward(startUrl, urls);
+        return urls;
+    }
+
+    private static void processUrlsSinglePageAndMoveForward(String currentPage, Set<String> urls) throws IOException {
+        try {
+            HtmlCleaner cleaner = new HtmlCleaner();
+            TagNode rootNode = cleaner.clean(new URL(currentPage), "windows-1251");
+            TagNode[] categories = rootNode.getElementsByAttValue("class", "rez-descr", true, false);
+            for (int i = 0; i < categories.length; i += 2) {
+                urls.add(categories[i].getText().toString().split("\n")[1]);
+            }
+            TagNode[] paging = rootNode.getElementsByAttValue("class", "mb10 mt10 t100", true, false)[0].getElementsHavingAttribute("title", false);
+
+            String nextUrl = PREFFIX + paging[paging.length - 1].getAttributeByName("href");
+            if (paging[paging.length - 1].getAttributeByName("title").equals("следующая страница Ctrl &#8594;")) {
+                processUrlsSinglePageAndMoveForward(nextUrl, urls);
+            }
+        } catch (Exception e) {
+            System.out.println(currentPage + "\tERROR\t" + e.getMessage());
+        }
+    }
+
+    private void getCatalogList() {
         MongoDBStorage storage = MongoDBStorage.getInstance();
         DBCursor url = storage.gottedCollection.find();
         HtmlCleaner cleaner = new HtmlCleaner();
@@ -43,37 +134,37 @@ public class HtmlHelper {
                     if (subc0 != null && subc0.length > 0) {
 
                         for (TagNode node : subc0) {
-                            if (!processed.contains(PREFFIX + node.getAttributeByName("href").toString())){
-                            subcategories.add(new Pair<String, String>(
-                                    PREFFIX + node.getAttributeByName("href").toString(),
-                                    data.getValue() + "/" + node.getText().toString()));
+                            if (!processed.contains(PREFFIX + node.getAttributeByName("href").toString())) {
+                                subcategories.add(new Pair<String, String>(
+                                        PREFFIX + node.getAttributeByName("href").toString(),
+                                        data.getValue() + "/" + node.getText().toString()));
                             }
                         }
                         if (subc1 != null && subc1.length > 0) {
                             for (TagNode node : subc1) {
-                                if (!processed.contains(PREFFIX + node.getAttributeByName("href").toString())){
-                                subcategories.add(new Pair<String, String>(
-                                        PREFFIX + node.getAttributeByName("href").toString(),
-                                        data.getValue() + "/" + node.getText().toString()));
+                                if (!processed.contains(PREFFIX + node.getAttributeByName("href").toString())) {
+                                    subcategories.add(new Pair<String, String>(
+                                            PREFFIX + node.getAttributeByName("href").toString(),
+                                            data.getValue() + "/" + node.getText().toString()));
                                 }
                             }
                         }
                     } else {
-                        if (pages.containsKey(data.getKey())){
+                        if (pages.containsKey(data.getKey())) {
                             System.out.println("double");
-                            pages.put(data.getKey(), data.getValue()+"|"+pages.get(data.getKey()));
+                            pages.put(data.getKey(), data.getValue() + "|" + pages.get(data.getKey()));
                         } else {
                             pages.put(data.getKey(), data.getValue());
                         }
 
                     }
                     processed.add(data.getKey());
-                    System.out.println(entity.get(Field.rubric).toString()+"\t"+count);
+                    System.out.println(entity.get(Field.rubric).toString() + "\t" + count);
                 } catch (Exception e) {
-                     System.out.println(subcategories.peek());
+                    System.out.println(subcategories.peek());
                 }
             }
-            for(Map.Entry<String,String> catalogPage: pages.entrySet()){
+            for (Map.Entry<String, String> catalogPage : pages.entrySet()) {
                 storage.processedCollection.insert(BasicDBObjectBuilder.start()
                         .add(Field.URL, catalogPage.getKey())
                         .add(Field.rubric, catalogPage.getValue()).get());
