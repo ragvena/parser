@@ -22,6 +22,7 @@ public class HtmlHelper {
     private static final String PREFFIX = "http://list.mail.ru";
 
     public static void main(String[] args) throws IOException {
+        final MongoDBStorage storage = MongoDBStorage.getInstance();
         List<String> test = new ArrayList<String>();
         test.add("http://list.mail.ru/18134/1/0_1_0_1.html");
         test.add("http://list.mail.ru/16185/1/0_1_0_1.html");
@@ -60,7 +61,7 @@ public class HtmlHelper {
         test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
         test.add("http://list.mail.ru/12403/1/0_1_0_1.html");
         test.add("http://list.mail.ru/33728/1/0_1_0_1.html");
-        ExecutorService executorService = new BlockingThreadPoolExecutor(10,
+        ExecutorService executorService = new BlockingThreadPoolExecutor(33,
                 10, 1000L, TimeUnit.MILLISECONDS, 1000L, TimeUnit.MILLISECONDS, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -72,7 +73,22 @@ public class HtmlHelper {
                 @Override
                 public void run() {
                     try {
-                        System.out.println(new Date().toString()+"\t"+url+"\t"+getUrlsFromPages(url).size()+"");
+                        Set<String> data =  getUrlsFromPages(url);
+                        if (data.size()<=1){
+                            storage.unparsedCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, data).get());
+                        }
+                        System.out.println(new Date().toString()+"\t"+url+"\t"+data.size()+"");
+                        for(String entity: data){
+                            DBObject key =  BasicDBObjectBuilder.start().add(Field.URL,entity).get();
+                           DBObject existing = storage.finalCollection.findOne(key);
+                            if (existing!=null && existing.containsField(Field.rubric)){
+                                existing.put(Field.rubric, existing.get(Field.rubric)+"|1");
+                                storage.finalCollection.update(key,existing
+                                        , true, false );
+                            }  else {
+                                storage.finalCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, entity).add(Field.rubric,"1").get());
+                            }
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -190,34 +206,4 @@ public class HtmlHelper {
         }
     }
 
-//
-//    //Конструктор
-//    public HtmlHelper(URL htmlPage) throws IOException
-//    {
-//        //Создаём объект HtmlCleaner
-//        HtmlCleaner cleaner = new HtmlCleaner();
-//        //Загружаем html код сайта
-//
-//        rootNode = cleaner.clean(htmlPage);
-//    }
-//
-//    List<TagNode> getLinksByClass(String CSSClassname)
-//    {
-//        List<TagNode> linkList = new ArrayList<TagNode>();
-//
-//        //Выбираем все ссылки
-//        TagNode linkElements[] = rootNode.getElementsByName("a", true);
-//        for (int i = 0; linkElements != null && i < linkElements.length; i++)
-//        {
-//            //получаем атрибут по имени
-//            String classType = linkElements[i].getAttributeByName("class");
-//            //если атрибут есть и он эквивалентен искомому, то добавляем в список
-//            if (classType != null && classType.equals(CSSClassname))
-//            {
-//                linkList.add(linkElements[i]);
-//            }
-//        }
-//
-//        return linkList;
-//    }
 }

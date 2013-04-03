@@ -15,7 +15,9 @@ public class MongoDBStorage {
     private static MongoDBStorage instance;
     public DB database;
     public DBCollection processedCollection;
+    public DBCollection finalCollection;
     public DBCollection gottedCollection;
+    public DBCollection unparsedCollection;
 
 
     private MongoDBStorage() {
@@ -29,6 +31,8 @@ public class MongoDBStorage {
         database.setWriteConcern(WriteConcern.NORMAL.continueOnErrorForInsert(true));
         processedCollection = database.getCollection(PROCESSRD);
         gottedCollection = database.getCollection(GOTED);
+        finalCollection =database.getCollection("pages");
+        unparsedCollection =database.getCollection("unparsed");
     }
 
     public static MongoDBStorage getInstance() {
