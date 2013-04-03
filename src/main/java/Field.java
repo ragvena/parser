@@ -5,5 +5,5 @@
  */
 public class Field {
     public static final String URL = "url";
-    public static final String  rubric = "rubric";
+    public static final String rubric = "rubric";
 }

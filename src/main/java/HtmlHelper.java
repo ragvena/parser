@@ -6,7 +6,6 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -73,20 +72,20 @@ public class HtmlHelper {
                 @Override
                 public void run() {
                     try {
-                        Set<String> data =  getUrlsFromPages(url);
-                        if (data.size()<=1){
+                        Set<String> data = getUrlsFromPages(url);
+                        if (data.size() <= 1) {
                             storage.unparsedCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, data).get());
                         }
-                        System.out.println(new Date().toString()+"\t"+url+"\t"+data.size()+"");
-                        for(String entity: data){
-                            DBObject key =  BasicDBObjectBuilder.start().add(Field.URL,entity).get();
-                           DBObject existing = storage.finalCollection.findOne(key);
-                            if (existing!=null && existing.containsField(Field.rubric)){
-                                existing.put(Field.rubric, existing.get(Field.rubric)+"|1");
-                                storage.finalCollection.update(key,existing
-                                        , true, false );
-                            }  else {
-                                storage.finalCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, entity).add(Field.rubric,"1").get());
+                        System.out.println(new Date().toString() + "\t" + url + "\t" + data.size() + "");
+                        for (String entity : data) {
+                            DBObject key = BasicDBObjectBuilder.start().add(Field.URL, entity).get();
+                            DBObject existing = storage.finalCollection.findOne(key);
+                            if (existing != null && existing.containsField(Field.rubric)) {
+                                existing.put(Field.rubric, existing.get(Field.rubric) + "|1");
+                                storage.finalCollection.update(key, existing
+                                        , true, false);
+                            } else {
+                                storage.finalCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, entity).add(Field.rubric, "1").get());
                             }
                         }
                     } catch (IOException e) {
@@ -100,7 +99,7 @@ public class HtmlHelper {
     }
 
 
-    private static  Set<String> getUrlsFromPages(String startUrl) throws IOException {
+    private static Set<String> getUrlsFromPages(String startUrl) throws IOException {
         Set<String> urls = new HashSet<String>();
         processUrlsSinglePageAndMoveForward(startUrl, urls);
         return urls;

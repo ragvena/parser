@@ -1,4 +1,7 @@
-import com.mongodb.*;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
+import com.mongodb.WriteConcern;
 
 import java.net.UnknownHostException;
 
@@ -31,8 +34,8 @@ public class MongoDBStorage {
         database.setWriteConcern(WriteConcern.NORMAL.continueOnErrorForInsert(true));
         processedCollection = database.getCollection(PROCESSRD);
         gottedCollection = database.getCollection(GOTED);
-        finalCollection =database.getCollection("pages");
-        unparsedCollection =database.getCollection("unparsed");
+        finalCollection = database.getCollection("pages");
+        unparsedCollection = database.getCollection("unparsed");
     }
 
     public static MongoDBStorage getInstance() {
@@ -41,11 +44,6 @@ public class MongoDBStorage {
         }
         return instance;
     }
-
-
-
-
-
 
 
 }
