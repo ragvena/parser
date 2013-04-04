@@ -209,6 +209,7 @@ public class HtmlHelper {
                     }
                     System.out.println(new Date().toString() + "\t" + catalogPages.size() + "\t" + mainRubric);
                     totalResult.put(mainRubric, catalogPages);
+                    storage.processedCollection.insert(BasicDBObjectBuilder.start().add("name", mainRubric).add("pages",catalogPages).get());
                     System.out.println(new Date().toString() + "\t" + mainRubric + "\t processed");
                     latch.countDown();
                 }
@@ -219,6 +220,8 @@ public class HtmlHelper {
         } catch (InterruptedException e) {
             // do nothing
         }
+
+
 
         //для результатов каждого из потоков
         for (Map.Entry<String, Map<String, Map<String, Double>>> threadResult : totalResult.entrySet()) {
@@ -248,6 +251,7 @@ public class HtmlHelper {
                         .add(Field.rubric, currentRubric).get(), true, false);
             }
         }
+
     }
 
     private static void getMain() throws IOException {
