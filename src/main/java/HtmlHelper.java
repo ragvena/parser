@@ -23,43 +23,6 @@ public class HtmlHelper {
     public static void main(String[] args) throws IOException {
         final MongoDBStorage storage = MongoDBStorage.getInstance();
         List<String> test = new ArrayList<String>();
-        test.add("http://list.mail.ru/18134/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/16185/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/27276/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/12403/1/0_1_0_1.html");
-        test.add("http://list.mail.ru/33728/1/0_1_0_1.html");
         ExecutorService executorService = new BlockingThreadPoolExecutor(33,
                 10, 1000L, TimeUnit.MILLISECONDS, 1000L, TimeUnit.MILLISECONDS, new Callable<Boolean>() {
             @Override
@@ -67,7 +30,11 @@ public class HtmlHelper {
                 return true;
             }
         });
-        for (final String url : test) {
+        DBCursor pages = storage.processedCollection.find();
+        while (pages.hasNext()) {
+            final DBObject page = pages.next();
+            final String url = (String) page.get(Field.URL);
+            final String rubrics = (String) page.get(Field.rubric);
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -77,17 +44,20 @@ public class HtmlHelper {
                             storage.unparsedCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, data).get());
                         }
                         System.out.println(new Date().toString() + "\t" + url + "\t" + data.size() + "");
+
                         for (String entity : data) {
                             DBObject key = BasicDBObjectBuilder.start().add(Field.URL, entity).get();
                             DBObject existing = storage.finalCollection.findOne(key);
                             if (existing != null && existing.containsField(Field.rubric)) {
-                                existing.put(Field.rubric, existing.get(Field.rubric) + "|1");
-                                storage.finalCollection.update(key, existing
-                                        , true, false);
+                                existing.put(Field.rubric, existing.get(Field.rubric) + "|" + rubrics);
+                                storage.finalCollection.update(key, existing, true, false);
                             } else {
-                                storage.finalCollection.insert(BasicDBObjectBuilder.start().add(Field.URL, entity).add(Field.rubric, "1").get());
+                                storage.finalCollection.insert(BasicDBObjectBuilder.start()
+                                        .add(Field.URL, entity)
+                                        .add(Field.rubric, rubrics).get());
                             }
                         }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -95,7 +65,6 @@ public class HtmlHelper {
             });
 
         }
-
     }
 
 
@@ -114,13 +83,15 @@ public class HtmlHelper {
                 urls.add(categories[i].getText().toString().split("\n")[1]);
             }
             TagNode[] paging = rootNode.getElementsByAttValue("class", "mb10 mt10 t100", true, false)[0].getElementsHavingAttribute("title", false);
-
-            String nextUrl = PREFFIX + paging[paging.length - 1].getAttributeByName("href");
-            if (paging[paging.length - 1].getAttributeByName("title").equals("следующая страница Ctrl &#8594;")) {
-                processUrlsSinglePageAndMoveForward(nextUrl, urls);
+            if (paging != null && paging.length != 0) {
+                String nextUrl = PREFFIX + paging[paging.length - 1].getAttributeByName("href");
+                if (paging[paging.length - 1].getAttributeByName("title").equals("следующая страница Ctrl &#8594;")) {
+                    processUrlsSinglePageAndMoveForward(nextUrl, urls);
+                }
             }
         } catch (Exception e) {
             System.out.println(currentPage + "\tERROR\t" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
