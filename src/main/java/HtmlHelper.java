@@ -6,7 +6,7 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.conditional.ITagNodeCondition;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
@@ -137,6 +137,8 @@ public class HtmlHelper {
         final ConcurrentHashMap<String, Map<String, Map<String, Double>>> totalResult = new ConcurrentHashMap<String, Map<String, Map<String, Double>>>();
         while (url.hasNext()) {
             final DBObject entity = url.next();
+
+
             final String mainRubric = (String) entity.get(Field.rubric);
             final String mainUrl = (String) entity.get(Field.URL);
             executorService.submit(new Runnable() {
@@ -209,7 +211,17 @@ public class HtmlHelper {
                     }
                     System.out.println(new Date().toString() + "\t" + catalogPages.size() + "\t" + mainRubric);
                     totalResult.put(mainRubric, catalogPages);
-                    storage.processedCollection.insert(BasicDBObjectBuilder.start().add("name", mainRubric).add("pages",catalogPages).get());
+                    try {
+                        PrintWriter pw = new PrintWriter(new FileWriter(mainRubric));
+                        for(Map.Entry<String, Map<String, Double>> entry:catalogPages.entrySet()){
+                            pw.append(entry.getKey()+"\t"+entry.getValue()+"\n");
+                        }
+                        pw.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        latch.countDown();
+                    }
                     System.out.println(new Date().toString() + "\t" + mainRubric + "\t processed");
                     latch.countDown();
                 }
