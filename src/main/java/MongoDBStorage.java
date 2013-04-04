@@ -13,7 +13,7 @@ import java.net.UnknownHostException;
 
 public class MongoDBStorage {
     private static final String MONGO_STORAGE = "mailru";
-    private static final String PROCESSRD = "urlsp";
+    private static final String PROCESSRD = "urlsp2";
     private static final String GOTED = "urlsg";
     private static MongoDBStorage instance;
     public DB database;
