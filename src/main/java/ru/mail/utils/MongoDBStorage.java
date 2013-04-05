@@ -1,3 +1,5 @@
+package ru.mail.utils;
+
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
@@ -21,6 +23,10 @@ public class MongoDBStorage {
     public DBCollection finalCollection;
     public DBCollection gottedCollection;
     public DBCollection unparsedCollection;
+    public DBCollection test;
+    public DBCollection test2;
+    public DBCollection result;
+    public DBCollection classifiedDomain;
 
 
     private MongoDBStorage() {
@@ -36,6 +42,10 @@ public class MongoDBStorage {
         gottedCollection = database.getCollection(GOTED);
         finalCollection = database.getCollection("pages");
         unparsedCollection = database.getCollection("unparsed");
+        test = database.getCollection("ru.mail.test");
+        test2 = database.getCollection("test2");
+        result = database.getCollection("result");
+        classifiedDomain = database.getCollection("classifieddomain");
     }
 
     public static MongoDBStorage getInstance() {

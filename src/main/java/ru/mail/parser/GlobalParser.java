@@ -1,3 +1,5 @@
+package ru.mail.parser;
+
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -5,6 +7,9 @@ import javafx.util.Pair;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.conditional.ITagNodeCondition;
+import ru.mail.RecordField;
+import ru.mail.utils.BlockingThreadPoolExecutor;
+import ru.mail.utils.MongoDBStorage;
 
 import java.io.*;
 import java.net.URL;
@@ -16,7 +21,7 @@ import java.util.concurrent.*;
  * Date: 4/2/13
  * Time: 10:03 PM
  */
-public class HtmlHelper {
+public class GlobalParser {
     private static final String PREFFIX = "http://list.mail.ru";
     //    private static final String PREFFIX = "http:";
     static final ITagNodeCondition URL_CONDITION = new ITagNodeCondition() {
@@ -54,8 +59,8 @@ public class HtmlHelper {
         final CountDownLatch latch = new CountDownLatch(((Number)storage.processedCollection.count()).intValue());
         while (pages.hasNext()) {
             DBObject page = pages.next();
-            final String url = (String) page.get(Field.URL);
-            final Map<String, Double> currentRubrics = (Map<String, Double>) page.get(Field.rubric);
+            final String url = (String) page.get(RecordField.URL);
+            final Map<String, Double> currentRubrics = (Map<String, Double>) page.get(RecordField.RUBRIC);
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -139,8 +144,8 @@ public class HtmlHelper {
             final DBObject entity = url.next();
 
 
-            final String mainRubric = (String) entity.get(Field.rubric);
-            final String mainUrl = (String) entity.get(Field.URL);
+            final String mainRubric = (String) entity.get(RecordField.RUBRIC);
+            final String mainUrl = (String) entity.get(RecordField.URL);
             executorService.submit(new Runnable() {
 
                 @Override
@@ -242,13 +247,13 @@ public class HtmlHelper {
 //                каждая страница каталога
             for (Map.Entry<String, Map<String, Double>> currentPage : categoryUrls.entrySet()) {
                 String currentPageUrl = currentPage.getKey();
-                DBObject key = BasicDBObjectBuilder.start().add(Field.URL, currentPageUrl).get();
+                DBObject key = BasicDBObjectBuilder.start().add(RecordField.URL, currentPageUrl).get();
 //                    добавляемый список рубрик
                 Map<String, Double> currentRubric = currentPage.getValue();
                 DBObject existingData = storage.processedCollection.findOne(key);
-                if (existingData!=null && existingData.containsField(Field.rubric)){
+                if (existingData!=null && existingData.containsField(RecordField.RUBRIC)){
 //                        уже существующий в монге список рубрик
-                    Map<String, Double> existingRubrics  = (Map<String, Double>) existingData.get(Field.rubric);
+                    Map<String, Double> existingRubrics  = (Map<String, Double>) existingData.get(RecordField.RUBRIC);
                     for(Map.Entry<String, Double> eRubric: existingRubrics.entrySet()){
                         Double counter = eRubric.getValue();
 //                            если рубрика уже существует, складываем в количество вхождений
@@ -259,8 +264,8 @@ public class HtmlHelper {
                         currentRubric.put(eRubric.getKey(), counter);
                     }
                 }
-                storage.processedCollection.update(key, BasicDBObjectBuilder.start().add(Field.URL, currentPageUrl)
-                        .add(Field.rubric, currentRubric).get(), true, false);
+                storage.processedCollection.update(key, BasicDBObjectBuilder.start().add(RecordField.URL, currentPageUrl)
+                        .add(RecordField.RUBRIC, currentRubric).get(), true, false);
             }
         }
 
@@ -285,8 +290,8 @@ public class HtmlHelper {
                     String href = tagNode.getElementsByName("a", false)[0].getAttributeByName("href");
                     String cat = tagNode.getText().toString();
                     storage.gottedCollection.insert(BasicDBObjectBuilder.start()
-                            .add(Field.rubric, cat)
-                            .add(Field.URL, PREFFIX + href).get());
+                            .add(RecordField.RUBRIC, cat)
+                            .add(RecordField.URL, PREFFIX + href).get());
                     System.out.println(cat);
                 }
             });

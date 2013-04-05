@@ -1,3 +1,5 @@
+package ru.mail.utils;
+
 import java.util.concurrent.*;
 
 /**
