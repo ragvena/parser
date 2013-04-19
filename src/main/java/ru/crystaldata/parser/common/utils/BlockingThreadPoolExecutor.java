@@ -1,4 +1,4 @@
-package ru.mail.utils;
+package ru.crystaldata.parser.common.utils;
 
 import java.util.concurrent.*;
 

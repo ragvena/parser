@@ -1,4 +1,4 @@
-package ru.mail.parser;
+package ru.crystaldata.parser.mail.processor;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCursor;
@@ -7,9 +7,9 @@ import javafx.util.Pair;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.conditional.ITagNodeCondition;
-import ru.mail.RecordField;
-import ru.mail.utils.BlockingThreadPoolExecutor;
-import ru.mail.utils.MongoDBStorage;
+import ru.crystaldata.parser.common.RecordField;
+import ru.crystaldata.parser.common.utils.BlockingThreadPoolExecutor;
+import ru.crystaldata.parser.common.utils.MongoDBStorage;
 
 import java.io.*;
 import java.net.URL;

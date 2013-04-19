@@ -1,20 +1,15 @@
-package ru.mail;
+package ru.crystaldata.parser.mail;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.TagNode;
-import org.htmlcleaner.conditional.ITagNodeCondition;
-import ru.mail.utils.MongoDBStorage;
+import ru.crystaldata.parser.common.DataAnalyzer;
+import ru.crystaldata.parser.common.RecordField;
+import ru.crystaldata.parser.common.utils.MongoDBStorage;
 
 import java.io.IOException;
-import java.net.URL;
-import java.sql.SQLRecoverableException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * User: ragvena

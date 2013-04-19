@@ -1,4 +1,4 @@
-package ru.mail.utils;
+package ru.crystaldata.parser.common.utils;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -42,9 +42,9 @@ public class MongoDBStorage {
         gottedCollection = database.getCollection(GOTED);
         finalCollection = database.getCollection("pages");
         unparsedCollection = database.getCollection("unparsed");
-        test = database.getCollection("ru.mail.test");
+        test = database.getCollection("");
         test2 = database.getCollection("test2");
-        result = database.getCollection("result");
+        result = database.getCollection("classification");
         classifiedDomain = database.getCollection("classifieddomain");
     }
 

@@ -1,4 +1,4 @@
-package ru.mail.utils;
+package ru.crystaldata.parser.common.utils;
 
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.conditional.ITagNodeCondition;
@@ -9,7 +9,7 @@ import org.htmlcleaner.conditional.ITagNodeCondition;
  * Time: 4:35 PM
  */
 public class NodeCondition {
-   public static final ITagNodeCondition URL_CONDITION = new ITagNodeCondition() {
+   public static final ITagNodeCondition MAILRU_URL_CONDITION = new ITagNodeCondition() {
         @Override
         public boolean satisfy(TagNode tagNode) {
             if (tagNode.getName().equals("a")) {
